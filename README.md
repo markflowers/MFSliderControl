@@ -1,0 +1,4 @@
+MFSliderControl
+===============
+
+Custom slider control 
