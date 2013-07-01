@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) UIImageView *thumbImageView;
 @property (nonatomic) BOOL moveSlider;
+@property (nonatomic) BOOL callDelegate;
 
 @end
 
@@ -84,10 +85,12 @@
         float lowerStep = floorf(self.thumbImageView.frame.origin.x / stepDistance) * self.step;
         float delta = (self.thumbImageView.frame.origin.x /stepDistance) - lowerStep;
         
+        self.callDelegate = YES;
+        
         if(delta >= self.step / 2) {
-            self.value = lowerStep + self.step;
+            self.value = self.range.location + lowerStep + self.step;
         } else {
-            self.value = lowerStep;
+            self.value = self.range.location + lowerStep;
         }
     } else {
         if(_moveSlider) {
@@ -105,12 +108,16 @@
     int numberOfPoints = floorf(((self.range.location + self.range.length) - self.range.location) / self.step);
     float stepDistance = (self.frame.size.width - 30.0f) / numberOfPoints;
     
-    float xOffset = value * stepDistance - (self.thumbImage.size.width / 4) + 1.0f;
+    float xOffset = (value - self.range.location) * stepDistance - (self.thumbImage.size.width / 4) + 1.0f;
     
     [UIView animateWithDuration:0.1 animations:^{
         self.thumbImageView.frame = CGRectMake(xOffset, self.thumbImageView.frame.origin.y, self.thumbImageView.frame.size.width, self.thumbImageView.frame.size.height);
     } completion:^(BOOL finished) {
+        if (self.callDelegate && [self.delegate respondsToSelector:@selector(slider:valueChanged:)]) {
+            [self.delegate slider:self valueChanged:self.value];
+        }
         
+        self.callDelegate = NO;
     }];
 }
 
